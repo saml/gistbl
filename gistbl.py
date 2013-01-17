@@ -1,19 +1,58 @@
 #!/usr/bin/python2
 
-from BeautifulSoup import BeautifulSoup
+import HTMLParser
 
-import urllib2
 import subprocess
 import tempfile
 import os
 import sys
 import re
 
-GIST_ID=re.compile(r'.*/([a-z0-9]+)[^a-z0-9].*')
+GIST_ID=re.compile(r'^.*/gist.github.com/([a-z0-9]+)[^a-z0-9]*.*$')
 
 def get_gist_id(gist_url):
     m = GIST_ID.match(gist_url)
     return m.group(1)
+
+
+def to_starttag(tag, attrs):
+    return '<%s %s>' % (tag, ' '.join(('%s="%s"' % (k,v) for k,v in attrs)))
+
+def to_endtag(tag):
+    return '</%s>' % tag
+
+class GistScraper(HTMLParser.HTMLParser):
+
+    def __init__(self, *args):
+        HTMLParser.HTMLParser.__init__(self, *args)
+        self.collect = None
+        self.data = []
+
+
+    def handle_starttag(self, tag, attrs):
+        tag = tag.lower()
+        attrd = dict(attrs)
+        attr_class = attrd.get('class', '')
+        if (not self.collect) and (tag == 'article' or attr_class.find('data') >= 0):
+            self.collect = tag
+
+        if self.collect:
+            self.data.append(to_starttag(tag, attrs))
+
+    def handle_endtag(self, tag):
+        tag = tag.lower()
+        if self.collect:
+            self.data.append(to_endtag(tag))
+
+        if tag == self.collect:
+            self.collect = None
+
+    def handle_data(self, data):
+        if self.collect:
+            self.data.append(data)
+
+    def scrapped_data(self):
+        return ''.join(self.data)
 
 
 class Gistbl(object):
@@ -30,7 +69,7 @@ class Gistbl(object):
         return self.clone_repo(repo_id)
 
     def repo_dir(self, repo_id):
-        return os.path.join(repo_base, repo_id)
+        return os.path.join(self.repo_base, repo_id)
 
     def htdoc(self, repo_id):
         return os.path.join(self.htdocs, repo_id + '.html')
@@ -53,7 +92,7 @@ class Gistbl(object):
         return p.returncode
 
     def download(self, page_url):
-        target_dir = tempfile.mkdtemp()
+        target_dir = tempfile.mkdtemp(prefix='gistbl-')
         target_path = os.path.join(target_dir, 'index.html')
 
         p = subprocess.Popen([self.curlcmd, '-s', '-o', target_path, page_url])
@@ -65,27 +104,28 @@ class Gistbl(object):
         page_url = self.page_url(repo_id)
         file_path = self.download(page_url)
         src_file = open(file_path, 'r')
+        src_doc = src_file.read()
+        src_file.close()
 
 
-        soup = BeautifulSoup(src_file)
-        articles = soup('article')
-        data = soup.findAll('div', attrs={'class': 'data'})
+        print('opening: %s' % file_path)
+        scraper = GistScraper()
+        scraper.feed(src_doc)
         
         htdoc = self.htdoc(repo_id)
         target_file = open(htdoc, 'w')
-        for article in articles:
-            target_file.write(unicode(article))
-        for x in data:
-            target_file.write(unicode(x))
+        print('writing: %s' % htdoc)
+        target_file.write(scraper.scrapped_data())
 
         target_file.close()
-        src_file.close()
 
 
 def main(argv):
     gist_url = argv[1]
     repo_id = get_gist_id(gist_url)
+    print("repo id: " + repo_id)
     gist = Gistbl('.', '.')
+    gist.clone_or_merge_repo(repo_id)
     gist.scrape(repo_id)
 
 if __name__ == '__main__':

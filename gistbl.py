@@ -12,7 +12,9 @@ GIST_ID=re.compile(r'^.*/gist.github.com/([a-z0-9]+)[^a-z0-9]*.*$')
 
 def get_gist_id(gist_url):
     m = GIST_ID.match(gist_url)
-    return m.group(1)
+    if m:
+        return m.group(1)
+    return None
 
 
 def to_starttag(tag, attrs):
@@ -121,10 +123,26 @@ class Gistbl(object):
 
 
 def main(argv):
+    if len(argv) <= 1:
+        print("Usage: %s gist-url [repo-base] [htdocs]" % argv[0])
+        sys.exit(1)
+
     gist_url = argv[1]
+    if len(argv) > 2:
+        repo_base = argv[2]
+    else:
+        repo_base = os.path.abspath('.')
+    if len(argv) > 3:
+        htdocs = argv[3]
+    else:
+        htdocs = os.path.abspath('.')
+
     repo_id = get_gist_id(gist_url)
-    print("repo id: " + repo_id)
-    gist = Gistbl('.', '.')
+    if repo_id is None:
+        print("invalid gist-url. cannot get gist id from the url")
+        sys.exit(1)
+
+    gist = Gistbl(repo_base, htdocs)
     gist.clone_or_merge_repo(repo_id)
     gist.scrape(repo_id)
 

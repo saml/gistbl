@@ -1,13 +1,17 @@
 #define LUA_LIB
 
+/*
+gcc -Isundown/src -I/home/sam/opt/openresty/luajit/include/luajit-2.0 sundown/src/buffer.c sundown/src/autolink.c sundown/src/stack.c sundown/src/markdown.c lua_sundown.c -shared -fPIC -L /home/sam/opt/openresty/luajit/lib -llua
+gcc -Isundown/src -I/home/sam/opt/openresty/luajit/include/luajit-2.0 sundown/src/buffer.c sundown/src/autolink.c sundown/src/stack.c sundown/src/markdown.c lua_sundown.c -shared -fPIC -L /home/sam/opt/openresty/luajit/lib -llua -o libsundown.so
+ 
+ */
+
 #include <string.h>
 #include <lauxlib.h>
 #include <lua.h>
 #include <lualib.h>
 
 #include "markdown.h"
-#include "html_blocks.h"
-#include "buffer.h"
 
 #define READ_UNIT 256
 #define OUTPUT_UNIT 128

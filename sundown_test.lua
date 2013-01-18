@@ -1,2 +1,3 @@
 local sundown = require('sundown')
-sundown.markdown('hello')
+print('hello')
+print(sundown.markdown('hello'))

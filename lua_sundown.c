@@ -11,6 +11,7 @@ gcc -Isundown/src -I/home/sam/opt/openresty/luajit/include/luajit-2.0 sundown/sr
 #include <lua.h>
 #include <lualib.h>
 
+#include <stdio.h>
 #include "markdown.h"
 
 #define READ_UNIT 256
@@ -24,27 +25,26 @@ static int sundown_markdown(lua_State *L) {
     size_t indocSize;
     struct buf *inbuf;
     struct buf *outbuf;
-    struct sd_callbacks callbacks;
+    struct sd_callbacks callbacks = {0};
     struct sd_markdown *markdown;
     int targetSize;
 
     indoc = luaL_checklstring(L, 1, &indocSize);
+    
     inbuf = bufnew(READ_UNIT);
     bufput(inbuf, indoc, indocSize);
-    
-    // Overhead guess inspired by Redcarpet.
+
     targetSize = (int)(indocSize * OVERHEAD_GUESS);
     outbuf = bufnew(OUTPUT_UNIT);
     bufgrow(outbuf, targetSize);
 
     markdown = sd_markdown_new(0, 16, &callbacks, NULL);
     sd_markdown_render(outbuf, inbuf->data, inbuf->size, markdown);
-    sd_markdown_free(markdown);
-
-    lua_pushlstring(L, outbuf->data, outbuf->size);
-    
+    printf("%d\n", outbuf->size);
+    lua_pushlstring(L, (const char*) outbuf->data, outbuf->size);
     bufrelease(inbuf);
     bufrelease(outbuf);
+    sd_markdown_free(markdown);
     
     return 1;
 }

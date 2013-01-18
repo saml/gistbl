@@ -7,4 +7,4 @@ LDFLAGS = -llua
 
 OBJDIR = target
 
-include main.make
+all: 

@@ -6,8 +6,9 @@ CFLAGS = -O2 \
 
 LDFLAGS = $(LUA_LIB) -llua -shared -fPIC
 
-LUA_INCLUDE = -I$(HOME)/opt/openresty/luajit/include/luajit-2.0
-LUA_LIB = -L$(HOME)/opt/openresty/luajit/lib
+LUA_HOME = $(HOME)/opt/openresty/luajit
+LUA_INCLUDE = -I$(LUA_HOME)/include/luajit-2.0
+LUA_LIB = -L$(LUA_HOME)/lib
 
 SRCS = sundown/src/*.c \
 	   sundown/html/*.c \

@@ -6,7 +6,8 @@ this is a test markdown entry.
 
     some code is here
     a = b + 1
-    
+    <script>alert(1)</script>
+
 1. some list here
 1. 유니코드
     * bleh another
@@ -22,4 +23,4 @@ bye.
 
 $$ a \in b $$
 
-<script>alert(1)</script>]]))
+<script>alert(2)</script>]]))

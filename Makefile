@@ -14,8 +14,8 @@ SRCS = sundown/src/*.c \
 	   sundown/html/*.c \
 	   lua_sundown.c
 
-libsundown.so: $(SRCS)
+sundown.so: $(SRCS)
 	$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
 
 clean:
-	rm libsundown.so
+	rm sundown.so

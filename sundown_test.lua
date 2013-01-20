@@ -1,4 +1,5 @@
 local sundown = require('sundown')
+
 print(sundown.markdown([[
 # hello world
 
@@ -24,3 +25,7 @@ bye.
 $$ a \in b $$
 
 <script>alert(2)</script>]]))
+
+
+local iwannablog = require('iwannablog')
+print(iwannablog.gimme_html('sundown_test.lua'))

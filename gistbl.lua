@@ -2,7 +2,9 @@ local say = ngx.say
 local uri = ngx.var.uri
 local exit = ngx.exit
 local htdocs = ngx.var.document_root
-local log = function(...) ngx.log(ngx.ERR, ...) end
+local INFO = ngx.INFO
+local ERR = ngx.ERR
+local log = ngx.log --function(...) ngx.log(ngx.ERR, ...) end
 
 local sundown = require('sundown')
 local pl_file = require('pl.file')
@@ -30,6 +32,7 @@ end
 
 
 local render = function()
+    log(ERR, uri)
     local markdown_path = get_markdown(uri)
     local input = pl_file.read(markdown_path)
     if not input then
@@ -49,4 +52,3 @@ local render = function()
 end
 
 render()
-
